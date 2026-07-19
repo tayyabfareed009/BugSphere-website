@@ -14,6 +14,7 @@ import reportRoutes from './routes/reportRoutes.js'
 import userRoutes from './routes/userRoutes.js'
 
 dotenv.config();
+console.log("MONGO_URI:", process.env.MONGO_URI)
 
 const app = express()
 const __filename = fileURLToPath(import.meta.url)
