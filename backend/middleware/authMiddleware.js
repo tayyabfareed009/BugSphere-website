@@ -6,7 +6,8 @@ export const protect = asyncHandler(async (req, res, next) => {
   const token = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : req.cookies?.token
   if (!token) return res.status(401).json({ message: 'Not authorized' })
 
-  const decoded = jwt.verify(token, process.env.JWT_SECRET || 'bugsphere-dev-secret')
+  if (!process.env.JWT_SECRET) return res.status(500).json({ message: 'JWT_SECRET is not configured' })
+  const decoded = jwt.verify(token, process.env.JWT_SECRET)
   req.user = await User.findById(decoded.id).select('-password')
   if (!req.user) return res.status(401).json({ message: 'User not found' })
   next()

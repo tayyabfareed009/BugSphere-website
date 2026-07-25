@@ -5,8 +5,8 @@ import { authorize, protect } from '../middleware/authMiddleware.js'
 const router = express.Router()
 
 router.use(protect)
-router.get('/', authorize('Admin'), getUsers)
+router.get('/', authorize('Owner', 'Project Manager', 'Team Lead'), getUsers)
 router.put('/profile', updateProfile)
-router.route('/:id').put(authorize('Admin'), updateUser).delete(authorize('Admin'), deleteUser)
+router.route('/:id').put(authorize('Owner'), updateUser).delete(authorize('Owner'), deleteUser)
 
 export default router

@@ -12,9 +12,10 @@ import commentRoutes from './routes/commentRoutes.js'
 import projectRoutes from './routes/projectRoutes.js'
 import reportRoutes from './routes/reportRoutes.js'
 import userRoutes from './routes/userRoutes.js'
+import organizationRoutes from './routes/organizationRoutes.js'
+import notificationRoutes from './routes/notificationRoutes.js'
 
 dotenv.config();
-console.log("MONGO_URI:", process.env.MONGO_URI)
 
 const app = express()
 const __filename = fileURLToPath(import.meta.url)
@@ -32,6 +33,8 @@ app.use('/api/projects', projectRoutes)
 app.use('/api/bugs', bugRoutes)
 app.use('/api/comments', commentRoutes)
 app.use('/api/users', userRoutes)
+app.use('/api/organization', organizationRoutes)
+app.use('/api/notifications', notificationRoutes)
 app.use('/api', reportRoutes)
 
 app.use(notFound)

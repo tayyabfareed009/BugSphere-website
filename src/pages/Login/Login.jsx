@@ -13,7 +13,7 @@ export default function Login() {
   const location = useLocation();
   console.log('📍 Current location:', location);
 
-  const defaultValues = { email: 'ava@bugsphere.dev', password: 'password123' };
+  const defaultValues = { organizationName: '', email: '', password: '' };
   console.log('📋 Default form values:', defaultValues);
 
   const {
@@ -22,13 +22,12 @@ export default function Login() {
     formState: { errors },
   } = useForm({ defaultValues });
 
-  // Log registration of each field (optional, but shows when form is set up)
   console.log('📝 Form registered');
 
   const onSubmit = async (values) => {
     console.log('🚀 Form submitted with values:', values);
 
-    // Log each field individually for clarity
+    console.log('🏢 Organization:', values.organization);
     console.log('📧 Email:', values.email);
     console.log('🔑 Password (length):', values.password.length);
 
@@ -47,7 +46,6 @@ export default function Login() {
     }
   };
 
-  // Log when form validation errors occur (they are captured by react-hook-form)
   console.log('📊 Current form errors:', errors);
 
   return (
@@ -57,11 +55,18 @@ export default function Login() {
     >
       <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
         <FormInput
+          label="Organization"
+          type="text"
+          {...register('organizationName', {
+            required: 'Organization name is required',
+          })}
+          error={errors.organization?.message}
+        />
+        <FormInput
           label="Email"
           type="email"
           {...register('email', {
             required: 'Email is required',
-            // Additional validation could be logged
           })}
           error={errors.email?.message}
         />
@@ -81,9 +86,7 @@ export default function Login() {
           <label className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
             <input type="checkbox" defaultChecked /> Remember me
           </label>
-          <button type="button" className="font-semibold text-sky-600">
-            Forgot password?
-          </button>
+          <span className="font-semibold text-sky-600">Reset through Firebase Console</span>
         </div>
         <Button icon={FiLogIn} className="w-full">
           Login
@@ -99,6 +102,7 @@ export default function Login() {
   );
 }
 
+// AuthFrame remains unchanged
 export function AuthFrame({ title, subtitle, children }) {
   console.log('🖼️ AuthFrame rendered with title:', title);
 

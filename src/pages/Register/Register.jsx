@@ -21,14 +21,7 @@ export default function Register() {
       <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
         <FormInput label="Full name" {...register('name', { required: 'Name is required' })} error={errors.name?.message} />
         <FormInput label="Email" type="email" {...register('email', { required: 'Email is required' })} error={errors.email?.message} />
-        <label className="grid gap-1 text-sm font-medium text-slate-700 dark:text-slate-200">
-          Role
-          <select {...register('role')} className="rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-800 dark:bg-slate-900">
-            <option>Admin</option>
-            <option>Developer</option>
-            <option>Tester</option>
-          </select>
-        </label>
+        <FormInput label="Organization name" {...register('organizationName', { required: 'Organization name is required' })} error={errors.organizationName?.message} />
         <FormInput label="Password" type="password" {...register('password', { required: 'Password is required', minLength: { value: 8, message: 'Use at least 8 characters' } })} error={errors.password?.message} />
         <Button icon={FiUserPlus} className="w-full">Register</Button>
       </form>

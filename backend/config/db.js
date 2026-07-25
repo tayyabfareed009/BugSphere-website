@@ -5,7 +5,8 @@ export const connectDB = async () => {
   try {
     mongoose.set('strictQuery', true)
 
-    await mongoose.connect(process.env.MONGO_URI, {
+    if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not configured')
+    await mongoose.connect(process.env.MONGODB_URI, {
       serverSelectionTimeoutMS: 120000, // 2 minutes
       socketTimeoutMS: 120000,
       connectTimeoutMS: 120000,

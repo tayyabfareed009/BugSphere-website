@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { AuthContext } from './authContextValue.js';
 import api from '../services/api';
 import { rolePermissions } from '../utils/constants.js';
+import { signInWithEmail, signUpWithEmail } from '../services/firebaseAuth.js';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -56,7 +57,8 @@ export function AuthProvider({ children }) {
     console.log(credentials);
 
     try {
-      const { data } = await api.post('/auth/login', credentials);
+      const firebase = await signInWithEmail(credentials.email, credentials.password);
+      const { data } = await api.post('/auth/session', { idToken: firebase.idToken });
 
       console.log('✅ Login Response');
       console.log(data);
@@ -91,10 +93,11 @@ export function AuthProvider({ children }) {
     console.log(payload);
 
     try {
-      const { data } = await api.post(
-        '/auth/register',
-        payload
-      );
+      const firebase = await signUpWithEmail(payload.email, payload.password);
+      const { data } = await api.post('/auth/session', {
+        idToken: firebase.idToken,
+        organizationName: payload.organizationName,
+      });
 
       console.log('✅ Registration Response');
       console.log(data);
@@ -145,12 +148,12 @@ export function AuthProvider({ children }) {
     toast.success('Signed out');
   };
 
-  const can = (permission) => {
+  const can = useCallback((permission) => {
     return Boolean(
       user &&
       rolePermissions[user.role]?.includes(permission)
     );
-  };
+  }, [user]);
 
   const value = useMemo(
     () => ({
@@ -161,7 +164,7 @@ export function AuthProvider({ children }) {
       logout,
       can,
     }),
-    [user, loading]
+    [user, loading, can]
   );
 
   return (

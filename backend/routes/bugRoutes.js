@@ -7,8 +7,8 @@ import { upload } from '../middleware/uploadMiddleware.js'
 const router = express.Router()
 
 router.use(protect)
-router.route('/').get(getBugs).post(upload.single('screenshot'), createBug)
-router.route('/:id').get(getBug).put(authorize('Admin', 'Developer'), upload.single('screenshot'), updateBug).delete(authorize('Admin'), deleteBug)
+router.route('/').get(getBugs).post(authorize('Owner', 'Project Manager', 'Team Lead', 'Tester'), upload.single('screenshot'), createBug)
+router.route('/:id').get(getBug).put(authorize('Owner', 'Project Manager', 'Team Lead', 'Developer', 'Tester'), upload.single('screenshot'), updateBug).delete(authorize('Owner', 'Project Manager'), deleteBug)
 router.post('/:bugId/comments', createComment)
 
 export default router

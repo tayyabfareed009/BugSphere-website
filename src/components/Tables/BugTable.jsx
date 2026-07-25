@@ -24,20 +24,24 @@ export default function BugTable({ bugs }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {bugs.map((bug) => (
-              <tr key={bug.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+            {bugs.map((bug) => {
+              const id = bug._id || bug.id
+              const project = bug.project?.name || bug.project || 'Unassigned'
+              const assignee = bug.assignedDeveloper?.name || bug.assignee || 'Unassigned'
+              const updated = bug.updatedAt ? new Date(bug.updatedAt).toLocaleDateString() : '—'
+              return <tr key={id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                 <td className="px-4 py-4">
-                  <Link to={`/bugs/${bug.id}`} className="font-semibold text-slate-950 hover:text-sky-600 dark:text-white">{bug.id}</Link>
+                  <Link to={`/bugs/${id}`} className="font-semibold text-slate-950 hover:text-sky-600 dark:text-white">{bug.bugId || bug.id}</Link>
                   <p className="mt-1 max-w-sm truncate text-slate-500 dark:text-slate-400">{bug.title}</p>
                 </td>
-                <td className="px-4 py-4 text-slate-600 dark:text-slate-300">{bug.project}</td>
+                <td className="px-4 py-4 text-slate-600 dark:text-slate-300">{project}</td>
                 <td className="px-4 py-4 font-medium">{bug.priority}</td>
                 <td className="px-4 py-4">{bug.severity}</td>
                 <td className="px-4 py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusStyles[bug.status]}`}>{bug.status}</span></td>
-                <td className="px-4 py-4 text-slate-600 dark:text-slate-300">{bug.assignee}</td>
-                <td className="px-4 py-4 text-slate-500">{bug.updatedAt}</td>
+                <td className="px-4 py-4 text-slate-600 dark:text-slate-300">{assignee}</td>
+                <td className="px-4 py-4 text-slate-500">{updated}</td>
               </tr>
-            ))}
+            })}
           </tbody>
         </table>
       </div>

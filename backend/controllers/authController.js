@@ -1,167 +1,44 @@
+import crypto from 'crypto'
+import Organization from '../models/Organization.js'
 import User from '../models/User.js'
+import Invitation from '../models/Invitation.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { generateToken } from '../utils/generateToken.js'
+import { verifyFirebaseIdToken } from '../config/firebase.js'
 
+const serializeUser = (user) => ({ id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar, organization: user.organization })
 const sendAuth = (res, user, status = 200) => {
-  console.log('\n==============================')
-  console.log('🔐 sendAuth() called')
-  console.log('👤 User ID:', user._id)
-  console.log('👤 Name:', user.name)
-  console.log('📧 Email:', user.email)
-  console.log('🎭 Role:', user.role)
-  console.log('📌 Status Code:', status)
-
   const token = generateToken(user)
-
-  console.log('🎫 JWT Token Generated')
-  console.log('🍪 Setting HTTP Only Cookie')
-
-  res.cookie('token', token, {
-    httpOnly: true,
-    sameSite: 'strict',
-    secure: process.env.NODE_ENV === 'production'
-  })
-
-  console.log('📤 Sending authentication response')
-
-  res.status(status).json({
-    token,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      avatar: user.avatar
-    }
-  })
-
-  console.log('==============================\n')
+  res.cookie('token', token, { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 })
+  res.status(status).json({ token, user: serializeUser(user) })
 }
 
-export const register = asyncHandler(async (req, res) => {
-
-  console.log('\n===================================')
-  console.log('🚀 REGISTER REQUEST RECEIVED')
-  console.log('===================================')
-
-  console.log('📍 Method:', req.method)
-  console.log('📍 URL:', req.originalUrl)
-  console.log('📦 Request Body:', req.body)
-
-  const { name, email, password, role } = req.body
-
-  console.log('👤 Name:', name)
-  console.log('📧 Email:', email)
-  console.log('🎭 Role:', role)
-  console.log('🔑 Password Length:', password?.length)
-
-  if (!name || !email || !password) {
-    console.log('❌ Missing required fields')
-    return res.status(400).json({
-      message: 'Name, email, and password are required'
-    })
+export const firebaseSession = asyncHandler(async (req, res) => {
+  const { idToken, invitationToken, organizationName } = req.body
+  const claims = await verifyFirebaseIdToken(idToken)
+  const firebaseUid = claims.user_id || claims.sub
+  const email = claims.email
+  const name = claims.name || email?.split('@')[0]
+  if (!email || !name) return res.status(400).json({ message: 'Firebase account must have a verified email.' })
+  let invitation = invitationToken && await Invitation.findOne({ token: invitationToken, email: email.toLowerCase(), acceptedAt: null, expiresAt: { $gt: new Date() } }).select('+token')
+  let organization
+  let role = 'Owner'
+  if (invitation) {
+    organization = invitation.organization
+    role = invitation.role
+    invitation.acceptedAt = new Date()
+    await invitation.save()
+  } else {
+    if (!organizationName) return res.status(400).json({ message: 'Organization name is required for a new workspace.' })
+    const base = organizationName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'workspace'
+    organization = await Organization.create({ name: organizationName, slug: `${base}-${crypto.randomBytes(3).toString('hex')}` })
   }
-
-  console.log('🔍 Checking if email already exists...')
-
-  const exists = await User.findOne({ email })
-
-  if (exists) {
-    console.log('❌ Email already registered')
-    return res.status(409).json({
-      message: 'Email already registered'
-    })
-  }
-
-  console.log('✅ Email available')
-  console.log('👤 Creating new user...')
-
-  const user = await User.create({
-    name,
-    email,
-    password,
-    role
-  })
-
-  console.log('✅ User created successfully')
-  console.log('🆔 User ID:', user._id)
-
+  let user = await User.findOne({ firebaseUid })
+  if (!user) user = await User.create({ firebaseUid, email, name, organization, role })
   sendAuth(res, user, 201)
 })
 
-export const login = asyncHandler(async (req, res) => {
-
-  console.log('\n===================================')
-  console.log('🚀 LOGIN REQUEST RECEIVED')
-  console.log('===================================')
-
-  console.log('📍 Method:', req.method)
-  console.log('📍 URL:', req.originalUrl)
-  console.log('📦 Request Body:', req.body)
-
-  const { email, password } = req.body
-
-  console.log('📧 Email:', email)
-  console.log('🔑 Password Length:', password?.length)
-
-  console.log('🔍 Searching user in database...')
-
-  const user = await User.findOne({ email }).select('+password')
-
-  if (!user) {
-    console.log('❌ User not found')
-    return res.status(401).json({
-      message: 'Invalid email or password'
-    })
-  }
-
-  console.log('✅ User found')
-  console.log('👤 User ID:', user._id)
-  console.log('👤 Name:', user.name)
-
-  console.log('🔒 Comparing password...')
-
-  const isMatch = await user.matchPassword(password)
-
-  console.log('🔐 Password Match:', isMatch)
-
-  if (!isMatch) {
-    console.log('❌ Invalid password')
-    return res.status(401).json({
-      message: 'Invalid email or password'
-    })
-  }
-
-  console.log('✅ Login successful')
-
-  sendAuth(res, user)
-})
-
-export const logout = ((req, res) => {
-
-  console.log('\n===================================')
-  console.log('🚪 LOGOUT REQUEST')
-  console.log('===================================')
-
-  console.log('🍪 Clearing authentication cookie')
-
-  res.clearCookie('token')
-
-  console.log('✅ User logged out')
-
-  res.json({
-    message: 'Logged out'
-  })
-})
-
-export const me = asyncHandler(async (req, res) => {
-
-  console.log('\n===================================')
-  console.log('👤 CURRENT USER REQUEST')
-  console.log('===================================')
-
-  console.log('📦 Authenticated User:')
-  console.log(req.user)
-
-  res.json(req.user)
-})
+// This only validates an application session. Firebase sign-in/token verification occurs
+// at the boundary in the deployed Firebase Admin integration.
+export const me = asyncHandler(async (req, res) => res.json(serializeUser(req.user)))
+export const logout = (req, res) => { res.clearCookie('token'); res.json({ message: 'Logged out' }) }

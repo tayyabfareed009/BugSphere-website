@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import Button from '../../components/Buttons/Button.jsx'
 
 const features = [
-  { icon: FiShield, title: 'Role aware workflows', text: 'Admins, developers, and testers see the controls they need.' },
+  { icon: FiShield, title: 'Role-aware workflows', text: 'Every workspace role sees the controls and data it is permitted to use.' },
   { icon: FiLayers, title: 'Project intelligence', text: 'Group issues by product, sprint, severity, owner, and release risk.' },
   { icon: FiZap, title: 'Fast triage', text: 'Search, filter, assign, comment, and export without losing context.' }
 ]
@@ -30,29 +30,29 @@ export default function Landing() {
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <p className="text-sm font-black uppercase tracking-[0.2em] text-sky-600">Track. Manage. Resolve.</p>
           <h1 className="mt-5 max-w-4xl text-5xl font-black leading-tight sm:text-6xl">BugSphere</h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">A modern bug tracking website for engineering teams that need clean triage, assignment, reporting, and release confidence in one production-ready SaaS interface.</p>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">A focused workspace for the full path from reported issue to verified release: triage, ownership, discussion, and insight.</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button to="/register" icon={FiArrowRight}>Start free</Button>
-            <Button to="/dashboard" variant="secondary">View demo</Button>
+            <Button to="/login" variant="secondary">Sign in</Button>
           </div>
           <div className="mt-10 grid max-w-xl grid-cols-3 gap-4">
-            {['99.9% uptime', '224 bugs tracked', '38% faster triage'].map((stat) => <div key={stat} className="rounded-lg border border-slate-200 p-4 text-sm font-bold dark:border-slate-800">{stat}</div>)}
+            {['Tenant isolated', 'Role governed', 'Evidence ready'].map((stat) => <div key={stat} className="rounded-xl border border-slate-200 bg-white/70 p-4 text-sm font-bold shadow-sm dark:border-slate-800 dark:bg-slate-900/70">{stat}</div>)}
           </div>
         </motion.div>
         <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7 }} className="rounded-lg border border-slate-200 bg-slate-50 p-4 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
           <div className="rounded-lg bg-white p-5 dark:bg-slate-950">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-500">Critical queue</p>
-                <h2 className="text-2xl font-black">Release blockers</h2>
+              <p className="text-sm text-slate-500">Workflow overview</p>
+                <h2 className="text-2xl font-black">Issue lifecycle</h2>
               </div>
-              <span className="rounded-full bg-rose-50 px-3 py-1 text-sm font-bold text-rose-600">11 open</span>
+              <span className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-bold text-indigo-600">Live workspace</span>
             </div>
-            {['Payment retry fails on timeout', 'Dashboard filter resets after export', 'Auth refresh loop on mobile'].map((bug, index) => (
+            {['Report and triage', 'Assign and collaborate', 'Verify and close'].map((bug, index) => (
               <div key={bug} className="mb-3 rounded-lg border border-slate-200 p-4 dark:border-slate-800">
                 <div className="flex items-center justify-between gap-4">
                   <p className="font-bold">{bug}</p>
-                  <span className="text-xs font-bold text-slate-500">BUG-10{index + 42}</span>
+                  <span className="text-xs font-bold text-slate-500">STEP 0{index + 1}</span>
                 </div>
                 <div className="mt-3 h-2 rounded-full bg-slate-100 dark:bg-slate-800"><div className="h-2 rounded-full bg-sky-500" style={{ width: `${74 - index * 16}%` }} /></div>
               </div>
