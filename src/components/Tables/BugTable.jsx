@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom'
-import Pagination from '../Pagination/Pagination.jsx'
+import { Link } from 'react-router-dom';
+import { FiTrash2 } from 'react-icons/fi';
+import Pagination from '../Pagination/Pagination.jsx';
 
 const statusStyles = {
   Open: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300',
@@ -8,10 +9,13 @@ const statusStyles = {
   Testing: 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300',
   Resolved: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300',
   Closed: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-  Reopened: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300'
-}
+  Reopened: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300',
+};
 
-export default function BugTable({ bugs }) {
+export default function BugTable({ bugs, onDelete, canDelete }) {
+  // Determine if we should show the Actions column
+  const showActions = !!onDelete && !!canDelete;
+
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="overflow-x-auto">
@@ -21,31 +25,57 @@ export default function BugTable({ bugs }) {
               {['Bug', 'Project', 'Priority', 'Severity', 'Status', 'Assignee', 'Updated'].map((heading) => (
                 <th key={heading} className="px-4 py-3 font-semibold">{heading}</th>
               ))}
+              {showActions && (
+                <th className="px-4 py-3 text-center font-semibold">Actions</th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {bugs.map((bug) => {
-              const id = bug._id || bug.id
-              const project = bug.project?.name || bug.project || 'Unassigned'
-              const assignee = bug.assignedDeveloper?.name || bug.assignee || 'Unassigned'
-              const updated = bug.updatedAt ? new Date(bug.updatedAt).toLocaleDateString() : '—'
-              return <tr key={id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td className="px-4 py-4">
-                  <Link to={`/bugs/${id}`} className="font-semibold text-slate-950 hover:text-sky-600 dark:text-white">{bug.bugId || bug.id}</Link>
-                  <p className="mt-1 max-w-sm truncate text-slate-500 dark:text-slate-400">{bug.title}</p>
-                </td>
-                <td className="px-4 py-4 text-slate-600 dark:text-slate-300">{project}</td>
-                <td className="px-4 py-4 font-medium">{bug.priority}</td>
-                <td className="px-4 py-4">{bug.severity}</td>
-                <td className="px-4 py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusStyles[bug.status]}`}>{bug.status}</span></td>
-                <td className="px-4 py-4 text-slate-600 dark:text-slate-300">{assignee}</td>
-                <td className="px-4 py-4 text-slate-500">{updated}</td>
-              </tr>
+              const id = bug._id || bug.id;
+              const project = bug.project?.name || bug.project || 'Unassigned';
+              const assignee = bug.assignedDeveloper?.name || bug.assignee || 'Unassigned';
+              const updated = bug.updatedAt ? new Date(bug.updatedAt).toLocaleDateString() : '—';
+              const canDeleteThis = canDelete ? canDelete(bug) : false;
+
+              return (
+                <tr key={id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                  <td className="px-4 py-4">
+                    <Link to={`/bugs/${id}`} className="font-semibold text-slate-950 hover:text-sky-600 dark:text-white">
+                      {bug.bugId || bug.id}
+                    </Link>
+                    <p className="mt-1 max-w-sm truncate text-slate-500 dark:text-slate-400">{bug.title}</p>
+                  </td>
+                  <td className="px-4 py-4 text-slate-600 dark:text-slate-300">{project}</td>
+                  <td className="px-4 py-4 font-medium">{bug.priority}</td>
+                  <td className="px-4 py-4">{bug.severity}</td>
+                  <td className="px-4 py-4">
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusStyles[bug.status]}`}>
+                      {bug.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 text-slate-600 dark:text-slate-300">{assignee}</td>
+                  <td className="px-4 py-4 text-slate-500">{updated}</td>
+                  {showActions && (
+                    <td className="px-4 py-4 text-center">
+                      {canDeleteThis && (
+                        <button
+                          onClick={() => onDelete(id)}
+                          className="text-slate-400 hover:text-red-600 dark:hover:text-red-400"
+                          title="Delete bug"
+                        >
+                          <FiTrash2 size={18} />
+                        </button>
+                      )}
+                    </td>
+                  )}
+                </tr>
+              );
             })}
           </tbody>
         </table>
       </div>
       <Pagination />
     </div>
-  )
+  );
 }
