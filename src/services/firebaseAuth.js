@@ -3,7 +3,7 @@
  * No SDK required – works with Firebase's Identity Toolkit
  */
 
-const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+const apiKey = "AIzaSyCWw-RioKVOpG4d8kFsOzJ6RieZNTxIiiw";
 
 /**
  * Base URL for Firebase Authentication REST endpoints
