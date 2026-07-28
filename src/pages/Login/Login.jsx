@@ -1,111 +1,154 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { FiLogIn } from 'react-icons/fi';
+import { FiLogIn, FiArrowLeft, FiMail } from 'react-icons/fi';
 import Button from '../../components/Buttons/Button.jsx';
 import FormInput from '../../components/Forms/FormInput.jsx';
 import { useAuth } from '../../hooks/useAuth.js';
 
 export default function Login() {
-  console.log('🔐 Login component mounted');
-
-  const { login } = useAuth();
+  const { login, resetPassword } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  console.log('📍 Current location:', location);
 
-  const defaultValues = { organizationName: '', email: '', password: '' };
-  console.log('📋 Default form values:', defaultValues);
-
+  // Login form
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({ defaultValues });
+  } = useForm({
+    defaultValues: { organizationName: '', email: '', password: '' },
+  });
 
-  console.log('📝 Form registered');
+  // Reset password state
+  const [isResetMode, setIsResetMode] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
 
-  const onSubmit = async (values) => {
-    console.log('🚀 Form submitted with values:', values);
-
-    console.log('🏢 Organization:', values.organizationName);
-    console.log('📧 Email:', values.email);
-    console.log('🔑 Password (length):', values.password.length);
-
+  // ── Login submit ──
+  const onLogin = async (values) => {
     try {
-      console.log('⏳ Calling login API...');
-      const result = await login(values);
-      console.log('✅ Login API resolved. Result:', result);
-
+      await login(values);
       const redirectPath = location.state?.from?.pathname || '/dashboard';
-      console.log(`🧭 Redirecting to: ${redirectPath}`);
       navigate(redirectPath);
-      console.log('🔄 Navigation triggered');
     } catch (error) {
-      console.error('❌ Login API rejected with error:', error);
-      // Optionally set error state here (not shown)
+      // Error is already handled by AuthProvider with toast
     }
   };
 
-  console.log('📊 Current form errors:', errors);
+  // ── Reset password submit ──
+  const onReset = async (e) => {
+    e.preventDefault();
+    if (!resetEmail.trim()) return;
+
+    setIsResetting(true);
+    try {
+      await resetPassword(resetEmail);
+      // Success – toast already shown
+      setIsResetMode(false);
+      setResetEmail('');
+    } catch (error) {
+      // Error is already handled by AuthProvider with toast
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   return (
     <AuthFrame
-      title="Welcome back"
-      subtitle="Sign in to continue tracking releases, defects, and engineering health."
+      title={isResetMode ? 'Reset password' : 'Welcome back'}
+      subtitle={
+        isResetMode
+          ? 'Enter your email address and we\'ll send you a link to reset your password.'
+          : 'Sign in to continue tracking releases, defects, and engineering health.'
+      }
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
-        <FormInput
-          label="Organization"
-          type="text"
-          {...register('organizationName', {
-            required: 'Organization name is required',
-          })}
-          error={errors.organization?.message}
-        />
-        <FormInput
-          label="Email"
-          type="email"
-          {...register('email', {
-            required: 'Email is required',
-          })}
-          error={errors.email?.message}
-        />
-        <FormInput
-          label="Password"
-          type="password"
-          {...register('password', {
-            required: 'Password is required',
-            minLength: {
-              value: 8,
-              message: 'Use at least 8 characters',
-            },
-          })}
-          error={errors.password?.message}
-        />
-        <div className="flex items-center justify-between text-sm">
-          <label className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-            <input type="checkbox" defaultChecked /> Remember me
-          </label>
-          <span className="font-semibold text-sky-600">Reset Password </span>
-        </div>
-        <Button icon={FiLogIn} className="w-full">
-          Login
-        </Button>
-        <p className="text-center text-sm text-slate-500">
-          New to WorkSphere?{' '}
-          <Link to="/register" className="font-semibold text-sky-600">
-            Create account
-          </Link>
-        </p>
-      </form>
+      {isResetMode ? (
+        // ── Reset password form ──
+        <form onSubmit={onReset} className="grid gap-4">
+          <FormInput
+            label="Email"
+            type="email"
+            value={resetEmail}
+            onChange={(e) => setResetEmail(e.target.value)}
+            required
+            icon={FiMail}
+            placeholder="your@email.com"
+          />
+          <Button type="submit" disabled={isResetting} className="w-full">
+            {isResetting ? 'Sending…' : 'Send reset link'}
+          </Button>
+          <button
+            type="button"
+            onClick={() => {
+              setIsResetMode(false);
+              setResetEmail('');
+            }}
+            className="flex items-center justify-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+          >
+            <FiArrowLeft size={16} /> Back to login
+          </button>
+        </form>
+      ) : (
+        // ── Login form ──
+        <form onSubmit={handleSubmit(onLogin)} className="grid gap-4">
+          <FormInput
+            label="Organization"
+            type="text"
+            {...register('organizationName', {
+              required: 'Organization name is required',
+            })}
+            error={errors.organization?.message}
+          />
+          <FormInput
+            label="Email"
+            type="email"
+            {...register('email', {
+              required: 'Email is required',
+            })}
+            error={errors.email?.message}
+          />
+          <FormInput
+            label="Password"
+            type="password"
+            {...register('password', {
+              required: 'Password is required',
+              minLength: {
+                value: 8,
+                message: 'Use at least 8 characters',
+              },
+            })}
+            error={errors.password?.message}
+          />
+          <div className="flex items-center justify-between text-sm">
+            <label className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+              <input type="checkbox" defaultChecked /> Remember me
+            </label>
+            <button
+              type="button"
+              onClick={() => setIsResetMode(true)}
+              className="font-semibold text-sky-600 hover:underline"
+            >
+              Reset password
+            </button>
+          </div>
+          <Button icon={FiLogIn} className="w-full">
+            Login
+          </Button>
+          <p className="text-center text-sm text-slate-500">
+            New to WorkSphere?{' '}
+            <Link to="/register" className="font-semibold text-sky-600">
+              Create account
+            </Link>
+          </p>
+        </form>
+      )}
     </AuthFrame>
   );
 }
 
-// AuthFrame remains unchanged
+// ── AuthFrame (unchanged) ──
 export function AuthFrame({ title, subtitle, children }) {
-  console.log('🖼️ AuthFrame rendered with title:', title);
-
   return (
     <div className="grid min-h-screen place-items-center bg-slate-50 px-4 py-10 dark:bg-slate-950">
       <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-800 dark:bg-slate-900">

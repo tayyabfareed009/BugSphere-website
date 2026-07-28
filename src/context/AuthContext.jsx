@@ -3,11 +3,15 @@ import toast from 'react-hot-toast';
 import { AuthContext } from './authContextValue.js';
 import api from '../services/api';
 import { rolePermissions } from '../utils/constants.js';
-import { signInWithEmail, signUpWithEmail } from '../services/firebaseAuth.js';
+import { 
+  signInWithEmail, 
+  signUpWithEmail,
+  resetPasswordWithEmail,  // <-- import
+} from '../services/firebaseAuth.js';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem('bugsphere_user');
+    const stored = localStorage.getItem('WorkSphere_user');
     return stored ? JSON.parse(stored) : null;
   });
 
@@ -71,7 +75,7 @@ export function AuthProvider({ children }) {
 
       setUser(data.user);
 
-      toast.success('Welcome back to BugSphere');
+      toast.success('Welcome back to WorkSphere');
 
       return data.user;
     } catch (error) {
@@ -101,10 +105,10 @@ export function AuthProvider({ children }) {
       if (payload.phone) body.append('phone', payload.phone)
       if (payload.avatar?.[0]) body.append('avatar', payload.avatar[0])
       const { data } = await api.post('/auth/register', body, {
-  headers: {
-    "Content-Type": "multipart/form-data",
-  },
-});
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       console.log('✅ Registration Response');
       console.log(data);
@@ -155,6 +159,20 @@ export function AuthProvider({ children }) {
     toast.success('Signed out');
   };
 
+  // ✅ New reset password method
+  const resetPassword = async (email) => {
+    try {
+      await resetPasswordWithEmail(email);
+      toast.success('Password reset email sent! Please check your inbox.');
+      return true;
+    } catch (error) {
+      console.error('❌ Password reset failed', error);
+      // Firebase error messages are user-friendly
+      toast.error(error.message || 'Failed to send reset email');
+      throw error;
+    }
+  };
+
   const can = useCallback((permission) => {
     return Boolean(
       user &&
@@ -169,6 +187,7 @@ export function AuthProvider({ children }) {
       login,
       register,
       logout,
+      resetPassword, // ✅ expose it
       can,
     }),
     [user, loading, can]
