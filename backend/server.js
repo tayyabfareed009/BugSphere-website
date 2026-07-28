@@ -32,7 +32,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // ── CORS ──
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+const clientUrl = process.env.CLIENT_URL || 'https://bug-sphere-website-lrfh.vercel.app';
 app.use(cors({ origin: clientUrl, credentials: true }));
 
 // ── Middleware ──
