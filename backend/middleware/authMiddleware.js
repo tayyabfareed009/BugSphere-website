@@ -10,6 +10,7 @@ export const protect = asyncHandler(async (req, res, next) => {
   const decoded = jwt.verify(token, process.env.JWT_SECRET)
   req.user = await User.findById(decoded.id).select('-password')
   if (!req.user) return res.status(401).json({ message: 'User not found' })
+  if (!req.user.active) return res.status(403).json({ message: 'This account has been disabled. Contact your organization owner.' })
   next()
 })
 

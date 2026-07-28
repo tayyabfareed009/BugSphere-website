@@ -10,7 +10,10 @@ const projectSchema = new mongoose.Schema({
   teams: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Team' }],
   milestones: [{ title: String, dueDate: Date, completed: { type: Boolean, default: false } }],
   status: { type: String, enum: ['Planning', 'Active', 'On Hold', 'Completed', 'Archived'], default: 'Active' },
-  dueDate: Date
+  priority: { type: String, enum: ['Low', 'Medium', 'High', 'Critical'], default: 'Medium' },
+  startDate: Date, endDate: Date, dueDate: Date,
+  progress: { type: Number, min: 0, max: 100, default: 0 },
+  attachments: [{ url: String, publicId: String, filename: String, mimeType: String, uploadedAt: { type: Date, default: Date.now } }]
 }, { timestamps: true })
 projectSchema.index({ organization: 1, key: 1 }, { unique: true })
 

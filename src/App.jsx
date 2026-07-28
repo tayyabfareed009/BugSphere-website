@@ -18,6 +18,10 @@ import Profile from './pages/Profile/Profile.jsx'
 import Settings from './pages/Settings/Settings.jsx'
 import Reports from './pages/Reports/Reports.jsx'
 import NotFound from './pages/NotFound/NotFound.jsx'
+import Teams from './pages/Teams/Teams.jsx'
+import WorkItems from './pages/Work/WorkItems.jsx'
+import Kanban from './pages/Kanban/Kanban.jsx'
+import Calendar from './pages/Calendar/Calendar.jsx'
 
 function App() {
   return (
@@ -32,6 +36,12 @@ function App() {
               <Route element={<AppLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/projects" element={<Projects />} />
+                <Route path="/teams" element={<Teams />} />
+                <Route path="/requirements" element={<WorkItems type="requirements" />} />
+                <Route path="/tasks" element={<WorkItems type="tasks" />} />
+                <Route path="/kanban" element={<Kanban />} />
+                <Route path="/calendar" element={<Calendar />} />
+                <Route path="/submissions" element={<WorkItems type="submissions" />} />
                 <Route path="/bugs" element={<Bugs />} />
                 <Route path="/bugs/new" element={<CreateBug />} />
                 <Route path="/bugs/:id" element={<BugDetails />} />

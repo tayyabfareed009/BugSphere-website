@@ -15,8 +15,8 @@ export default function Landing() {
       <nav className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/90">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <Link to="/" className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-lg bg-slate-950 font-black text-white dark:bg-white dark:text-slate-950">BS</span>
-            <span className="text-xl font-black">BugSphere</span>
+            <span className="grid h-10 w-10 place-items-center rounded-lg bg-slate-950 font-black text-white dark:bg-white dark:text-slate-950">WS</span>
+            <span className="text-xl font-black">WorksSphere</span>
           </Link>
           <div className="hidden gap-8 text-sm font-semibold text-slate-600 dark:text-slate-300 md:flex">
             <a href="#features">Features</a>
@@ -29,7 +29,7 @@ export default function Landing() {
       <section className="mx-auto grid min-h-[calc(100vh-73px)] max-w-7xl items-center gap-10 px-4 py-16 lg:grid-cols-[1fr_0.9fr]">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <p className="text-sm font-black uppercase tracking-[0.2em] text-sky-600">Track. Manage. Resolve.</p>
-          <h1 className="mt-5 max-w-4xl text-5xl font-black leading-tight sm:text-6xl">BugSphere</h1>
+          <h1 className="mt-5 max-w-4xl text-5xl font-black leading-tight sm:text-6xl">WorksSphere</h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">A focused workspace for the full path from reported issue to verified release: triage, ownership, discussion, and insight.</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button to="/register" icon={FiArrowRight}>Start free</Button>
@@ -84,7 +84,7 @@ export default function Landing() {
           {['Starter', 'Team', 'Enterprise'].map((plan, index) => <div key={plan} className="rounded-lg border border-white/10 p-6"><h3 className="text-2xl font-black">{plan}</h3><p className="mt-3 text-slate-300">{index === 0 ? 'Free' : `$${index * 19}/user`}</p><Button to="/register" className="mt-6 w-full" variant={index === 1 ? 'secondary' : 'primary'}>Choose plan</Button></div>)}
         </div>
       </section>
-      <footer className="px-4 py-8 text-center text-sm text-slate-500">BugSphere helps teams turn defects into shipped fixes.</footer>
+      <footer className="px-4 py-8 text-center text-sm text-slate-500">WorksSphere helps teams turn defects into shipped fixes.</footer>
     </div>
   )
 }

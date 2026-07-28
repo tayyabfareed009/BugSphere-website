@@ -10,9 +10,9 @@ export default function Navbar({ onMenu }) {
   const { theme, toggleTheme } = useTheme()
   const [notifications, setNotifications] = useState([])
   const [open, setOpen] = useState(false)
-  useEffect(() => { const load = () => api.get('/notifications').then(({ data }) => setNotifications(data)).catch((error) => console.error('[BugSphere] Notifications load failed', error)); load(); const interval = setInterval(load, 30000); return () => clearInterval(interval) }, [])
+  useEffect(() => { const load = () => api.get('/notifications').then(({ data }) => setNotifications(data)).catch((error) => console.error('[WorkSphere] Notifications load failed', error)); load(); const interval = setInterval(load, 30000); return () => clearInterval(interval) }, [])
   const unread = notifications.filter((item) => !item.read).length
-  const markRead = async (id) => { try { await api.put(`/notifications/${id}/read`); setNotifications((items) => items.map((item) => item._id === id ? { ...item, read: true } : item)) } catch (error) { console.error('[BugSphere] Notification update failed', error) } }
+  const markRead = async (id) => { try { await api.put(`/notifications/${id}/read`); setNotifications((items) => items.map((item) => item._id === id ? { ...item, read: true } : item)) } catch (error) { console.error('[WorkSphere] Notification update failed', error) } }
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/90 px-4 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/90 sm:px-6">

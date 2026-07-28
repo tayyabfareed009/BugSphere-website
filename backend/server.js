@@ -1,6 +1,11 @@
+import dotenv from 'dotenv'
+dotenv.config();
+import cloudinary, { configureCloudinary } from './config/cloudinary.js';
+configureCloudinary();
+
+console.log(cloudinary.config(true));
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
-import dotenv from 'dotenv'
 import express from 'express'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -12,10 +17,17 @@ import commentRoutes from './routes/commentRoutes.js'
 import projectRoutes from './routes/projectRoutes.js'
 import reportRoutes from './routes/reportRoutes.js'
 import userRoutes from './routes/userRoutes.js'
+//import cloudinary from './config/cloudinary.js';
 import organizationRoutes from './routes/organizationRoutes.js'
 import notificationRoutes from './routes/notificationRoutes.js'
+import teamRoutes from './routes/teamRoutes.js'
+import workRoutes from './routes/workRoutes.js'
+console.log({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET ? "Loaded" : "Missing",
+});
 
-dotenv.config();
 
 const app = express()
 const __filename = fileURLToPath(import.meta.url)
@@ -35,6 +47,8 @@ app.use('/api/comments', commentRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/organization', organizationRoutes)
 app.use('/api/notifications', notificationRoutes)
+app.use('/api/teams', teamRoutes)
+app.use('/api', workRoutes)
 app.use('/api', reportRoutes)
 
 app.use(notFound)

@@ -22,7 +22,7 @@ export const getProject = asyncHandler(async (req, res) => {
 })
 
 export const updateProject = asyncHandler(async (req, res) => {
-  const allowed = ['name', 'description', 'status', 'members', 'teams', 'milestones', 'dueDate']
+  const allowed = ['name', 'description', 'status', 'priority', 'members', 'teams', 'milestones', 'startDate', 'endDate', 'dueDate', 'progress', 'attachments']
   const update = Object.fromEntries(Object.entries(req.body).filter(([key]) => allowed.includes(key)))
   const project = await Project.findOneAndUpdate({ _id: req.params.id, organization: req.user.organization }, update, { new: true, runValidators: true })
   if (!project) return res.status(404).json({ message: 'Project not found' })

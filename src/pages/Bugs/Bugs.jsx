@@ -19,10 +19,10 @@ export default function Bugs() {
   useEffect(() => {
     const load = async () => {
       try {
-        console.log('[BugSphere] Loading bugs')
+        console.log('[WorkSphere] Loading bugs')
         const { data } = await api.get('/bugs', { params: { search: query || undefined, status: status === 'All' ? undefined : status, priority: priority === 'All' ? undefined : priority, severity: severity === 'All' ? undefined : severity, limit: 100 } })
         setBugs(data.data)
-      } catch (error) { console.error('[BugSphere] Bugs load failed', error) } finally { setLoading(false) }
+      } catch (error) { console.error('[WorkSphere] Bugs load failed', error) } finally { setLoading(false) }
     }
     const timer = setTimeout(load, 250)
     return () => clearTimeout(timer)

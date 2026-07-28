@@ -1,11 +1,20 @@
 import express from 'express'
-import { firebaseSession, logout, me } from '../controllers/authController.js'
+import {
+    register,
+    login,
+    me,
+    logout
+} from "../controllers/authController.js";
 import { protect } from '../middleware/authMiddleware.js'
+import { upload } from '../middleware/uploadMiddleware.js'
 
 const router = express.Router()
+router.post("/register", upload.single("avatar"), register);
+router.post("/login", login);
 
-router.post('/session', firebaseSession)
-router.post('/logout', logout)
-router.get('/me', protect, me)
+router.get('/me', protect, me);
+router.post('/logout', logout);
+// router.post('/logout', logout)
+// router.get('/me', protect, me)
 
 export default router

@@ -1,9 +1,15 @@
 import { NavLink } from 'react-router-dom'
-import { FiBarChart2, FiFolder, FiGrid, FiSettings, FiShield, FiUser, FiUsers } from 'react-icons/fi'
+import { FiBarChart2, FiCalendar, FiColumns, FiClipboard, FiFileText, FiFolder, FiGrid, FiSettings, FiShield, FiUser, FiUsers } from 'react-icons/fi'
 
 const links = [
   { to: '/dashboard', label: 'Dashboard', icon: FiGrid },
   { to: '/projects', label: 'Projects', icon: FiFolder },
+  { to: '/teams', label: 'Teams', icon: FiUsers },
+  { to: '/requirements', label: 'Requirements', icon: FiFileText },
+  { to: '/tasks', label: 'Tasks', icon: FiClipboard },
+  { to: '/kanban', label: 'Kanban', icon: FiColumns },
+  { to: '/calendar', label: 'Calendar', icon: FiCalendar },
+  { to: '/submissions', label: 'Daily work', icon: FiClipboard },
   { to: '/bugs', label: 'Bugs', icon: FiShield },
   { to: '/reports', label: 'Reports', icon: FiBarChart2 },
   { to: '/users', label: 'Users', icon: FiUsers },

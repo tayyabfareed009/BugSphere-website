@@ -58,7 +58,7 @@ export function AuthProvider({ children }) {
 
     try {
       const firebase = await signInWithEmail(credentials.email, credentials.password);
-      const { data } = await api.post('/auth/session', { idToken: firebase.idToken });
+      const { data } = await api.post('/auth/login', { idToken: firebase.idToken });
 
       console.log('✅ Login Response');
       console.log(data);
@@ -94,10 +94,17 @@ export function AuthProvider({ children }) {
 
     try {
       const firebase = await signUpWithEmail(payload.email, payload.password);
-      const { data } = await api.post('/auth/session', {
-        idToken: firebase.idToken,
-        organizationName: payload.organizationName,
-      });
+      const body = new FormData()
+      body.append('idToken', firebase.idToken)
+      if (payload.organizationName) body.append('organizationName', payload.organizationName)
+      if (payload.invitationToken) body.append('invitationToken', payload.invitationToken)
+      if (payload.phone) body.append('phone', payload.phone)
+      if (payload.avatar?.[0]) body.append('avatar', payload.avatar[0])
+      const { data } = await api.post('/auth/register', body, {
+  headers: {
+    "Content-Type": "multipart/form-data",
+  },
+});
 
       console.log('✅ Registration Response');
       console.log(data);

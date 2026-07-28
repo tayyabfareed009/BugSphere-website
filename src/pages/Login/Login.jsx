@@ -27,7 +27,7 @@ export default function Login() {
   const onSubmit = async (values) => {
     console.log('🚀 Form submitted with values:', values);
 
-    console.log('🏢 Organization:', values.organization);
+    console.log('🏢 Organization:', values.organizationName);
     console.log('📧 Email:', values.email);
     console.log('🔑 Password (length):', values.password.length);
 
@@ -86,13 +86,13 @@ export default function Login() {
           <label className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
             <input type="checkbox" defaultChecked /> Remember me
           </label>
-          <span className="font-semibold text-sky-600">Reset through Firebase Console</span>
+          <span className="font-semibold text-sky-600">Reset Password </span>
         </div>
         <Button icon={FiLogIn} className="w-full">
           Login
         </Button>
         <p className="text-center text-sm text-slate-500">
-          New to BugSphere?{' '}
+          New to WorkSphere?{' '}
           <Link to="/register" className="font-semibold text-sky-600">
             Create account
           </Link>
@@ -111,11 +111,11 @@ export function AuthFrame({ title, subtitle, children }) {
       <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-800 dark:bg-slate-900">
         <Link to="/" className="mb-8 flex items-center gap-3">
           <span className="grid h-10 w-10 place-items-center rounded-lg bg-slate-950 font-black text-white dark:bg-white dark:text-slate-950">
-            BS
+            WS
           </span>
           <span>
             <span className="block text-lg font-black text-slate-950 dark:text-white">
-              BugSphere
+              WorkSphere
             </span>
             <span className="text-xs font-semibold text-slate-500">
               Track. Manage. Resolve.
