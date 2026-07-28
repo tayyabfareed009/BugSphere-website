@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://bug-sphere-website-unqv.vercel.app//api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://bug-sphere-website-lrfh.vercel.app/api',
   withCredentials: true
 })
 
