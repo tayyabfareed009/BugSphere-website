@@ -4,13 +4,12 @@ dotenv.config();
 import cloudinary, { configureCloudinary } from './config/cloudinary.js';
 configureCloudinary();
 
-console.log(cloudinary.config(true)); // optional – can be removed in production
-
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
 import { connectDB } from './config/db.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
@@ -31,22 +30,77 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// ── CORS ──
-const clientUrl = process.env.CLIENT_URL || 'https://bug-sphere-website-lrfh.vercel.app';
-app.use(cors({ origin: clientUrl, credentials: true }));
+/* ===========================
+   CORS Configuration
+=========================== */
 
-// ── Middleware ──
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://bug-sphere-website-tayyabfareed009s-projects.vercel.app'
+];
+
+const corsOptions = {
+    origin(origin, callback) {
+
+        // Allow Postman, mobile apps, server-to-server requests
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        // Allow localhost and production frontend
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+
+        // Allow ALL Vercel preview deployments
+        if (origin.endsWith('.vercel.app')) {
+            return callback(null, true);
+        }
+
+        console.log('Blocked by CORS:', origin);
+
+        callback(new Error('Not allowed by CORS'));
+    },
+
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+        'Origin',
+        'X-Requested-With',
+        'Content-Type',
+        'Accept',
+        'Authorization'
+    ]
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+/* ===========================
+   Middleware
+=========================== */
+
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ── Static files (for local development only; on Vercel, use Cloudinary) ──
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ── Health check ──
-app.get('/api/health', (req, res) => res.json({ status: 'ok', app: 'WorkSphere' }));
+/* ===========================
+   Health Check
+=========================== */
 
-// ── Routes ──
+app.get('/api/health', (req, res) => {
+    res.json({
+        success: true,
+        message: 'WorkSphere API Running'
+    });
+});
+
+/* ===========================
+   Routes
+=========================== */
+
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/bugs', bugRoutes);
@@ -58,24 +112,35 @@ app.use('/api/teams', teamRoutes);
 app.use('/api', workRoutes);
 app.use('/api', reportRoutes);
 
-// ── Error handling ──
+/* ===========================
+   Error Handlers
+=========================== */
+
 app.use(notFound);
 app.use(errorHandler);
 
-// ── Database connection ──
-// Connect once on module load (works for serverless – connection reused across invocations)
-connectDB().catch((err) => {
-  console.error('❌ Database connection failed:', err);
-  // Don't exit – let Vercel handle the error gracefully
+/* ===========================
+   Database
+=========================== */
+
+connectDB().catch(err => {
+    console.error('Database Connection Failed:', err);
 });
 
-// ── Export the app for Vercel ──
+/* ===========================
+   Export
+=========================== */
+
 export default app;
 
-// ── Start server only when run directly (not in Vercel) ──
+/* ===========================
+   Local Development
+=========================== */
+
 if (process.env.VERCEL !== '1' && process.env.NODE_ENV !== 'production') {
-  const port = process.env.PORT || 5000;
-  app.listen(port, () => {
-    console.log(`🚀 WorkSphere API running locally on port ${port}`);
-  });
+    const PORT = process.env.PORT || 5000;
+
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
 }
