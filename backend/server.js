@@ -38,39 +38,43 @@ const allowedOrigins = [
     'http://localhost:5173',
     'https://bug-sphere-website-tayyabfareed009s-projects.vercel.app'
 ];
-const allowedOrigins = [
-    "http://localhost:5173",
-    process.env.CLIENT_URL
-].filter(Boolean);
 
 const corsOptions = {
     origin(origin, callback) {
 
-        if (!origin) return callback(null, true);
+        // Allow Postman, mobile apps, server-to-server requests
+        if (!origin) {
+            return callback(null, true);
+        }
 
+        // Allow localhost and production frontend
         if (allowedOrigins.includes(origin)) {
             return callback(null, true);
         }
 
-        if (
-            origin.startsWith("https://bug-sphere-website") &&
-            origin.endsWith(".vercel.app")
-        ) {
+        // Allow ALL Vercel preview deployments
+        if (origin.endsWith('.vercel.app')) {
             return callback(null, true);
         }
 
-        console.log("Blocked Origin:", origin);
+        console.log('Blocked by CORS:', origin);
 
-        callback(new Error("Not allowed by CORS"));
+        callback(new Error('Not allowed by CORS'));
     },
 
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+        'Origin',
+        'X-Requested-With',
+        'Content-Type',
+        'Accept',
+        'Authorization'
+    ]
 };
 
 app.use(cors(corsOptions));
-
-
-
+app.options('*', cors(corsOptions));
 
 /* ===========================
    Middleware
@@ -86,56 +90,11 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
    Health Check
 =========================== */
 
-app.get('/api/health', async (req, res) => {
-    try {
-        const mongoose = (await import('mongoose')).default;
-
-        res.status(200).json({
-            success: true,
-            message: "WorkSphere API Running",
-            timestamp: new Date().toISOString(),
-
-            server: {
-                node: process.version,
-                environment: process.env.NODE_ENV,
-                vercel: !!process.env.VERCEL,
-                uptime: `${Math.floor(process.uptime())}s`
-            },
-
-            request: {
-                method: req.method,
-                origin: req.headers.origin || null,
-                host: req.headers.host,
-                ip: req.ip
-            },
-
-            database: {
-                connected: mongoose.connection.readyState === 1,
-                state: mongoose.connection.readyState,
-                name: mongoose.connection.name || null
-            },
-
-            environment: {
-                CLIENT_URL: !!process.env.CLIENT_URL,
-                MONGODB_URI: !!process.env.MONGODB_URI,
-                JWT_SECRET: !!process.env.JWT_SECRET,
-                CLOUDINARY_CLOUD_NAME: !!process.env.CLOUDINARY_CLOUD_NAME,
-                CLOUDINARY_API_KEY: !!process.env.CLOUDINARY_API_KEY,
-                CLOUDINARY_API_SECRET: !!process.env.CLOUDINARY_API_SECRET,
-                FIREBASE_PROJECT_ID: !!process.env.FIREBASE_PROJECT_ID,
-                FIREBASE_CLIENT_EMAIL: !!process.env.FIREBASE_CLIENT_EMAIL,
-                FIREBASE_PRIVATE_KEY: !!process.env.FIREBASE_PRIVATE_KEY
-            }
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Health check failed",
-            error: error.message,
-            stack: process.env.NODE_ENV === "development" ? error.stack : undefined
-        });
-    }
+app.get('/api/health', (req, res) => {
+    res.json({
+        success: true,
+        message: 'WorkSphere API Running'
+    });
 });
 
 /* ===========================
