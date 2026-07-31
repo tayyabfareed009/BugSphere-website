@@ -89,11 +89,46 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 /* ===========================
    Health Check
 =========================== */
-
 app.get('/api/health', (req, res) => {
-    res.json({
+    res.status(200).json({
         success: true,
-        message: 'WorkSphere API Running'
+        message: "WorkSphere API Running",
+        timestamp: new Date().toISOString(),
+
+        environment: {
+            nodeEnv: process.env.NODE_ENV,
+            vercel: process.env.VERCEL || false,
+            port: process.env.PORT || null
+        },
+
+        request: {
+            method: req.method,
+            origin: req.headers.origin || null,
+            host: req.headers.host,
+            userAgent: req.headers["user-agent"]
+        },
+
+        cors: {
+            clientUrl: process.env.CLIENT_URL || null
+        },
+
+        database: {
+            configured: !!process.env.MONGODB_URI
+        },
+
+        cloudinary: {
+            configured:
+                !!process.env.CLOUDINARY_CLOUD_NAME &&
+                !!process.env.CLOUDINARY_API_KEY &&
+                !!process.env.CLOUDINARY_API_SECRET
+        },
+
+        firebase: {
+            configured:
+                !!process.env.FIREBASE_PROJECT_ID &&
+                !!process.env.FIREBASE_CLIENT_EMAIL &&
+                !!process.env.FIREBASE_PRIVATE_KEY
+        }
     });
 });
 
