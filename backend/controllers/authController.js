@@ -7,7 +7,7 @@ import { asyncHandler } from '../utils/asyncHandler.js'
 import { generateToken } from '../utils/generateToken.js'
 import { verifyFirebaseIdToken } from '../config/firebase.js'
 import { findActiveInvitation } from '../services/invitationService.js'
-import cloudinary from '../config/cloudinary.js'
+//import cloudinary from '../config/cloudinary.js'
 
 const serializeUser = (user) => ({ id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar, organization: user.organization })
 const sendAuth = (res, user, status = 200) => {
@@ -17,7 +17,13 @@ const sendAuth = (res, user, status = 200) => {
 }
 
 export const register = asyncHandler(async (req, res) => {
-  const { idToken, invitationToken, organizationName, phone } = req.body
+  const {
+  idToken,
+  invitationToken,
+  organizationName,
+  phone,
+  avatar = ''
+} = req.body
   const claims = await verifyFirebaseIdToken(idToken)
   const firebaseUid = claims.user_id || claims.sub
   const email = claims.email
@@ -37,42 +43,6 @@ export const register = asyncHandler(async (req, res) => {
   }
   let user = await User.findOne({ firebaseUid })
   if (user && String(user.organization) !== String(organization)) return res.status(403).json({ message: 'This Firebase account already belongs to another organization.' })
-  let avatar = '';
-console.log("req.file exists:", !!req.file);
-console.log("Request body:", req.body);
-if (req.file) {
-  console.log("File received:", req.file);
-
-  try {
-    const result = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        {
-          resource_type: "image",
-          folder: "worksphere/avatars",
-          public_id: `${firebaseUid}-${Date.now()}`
-        },
-        (error, result) => {
-          if (error) {
-            console.error("Cloudinary upload error:", error);
-            return reject(error);
-          }
-
-          resolve(result);
-        }
-      );
-
-      stream.end(req.file.buffer);
-    });
-
-    console.log("Cloudinary upload success:", result);
-
-    avatar = result.secure_url;
-  } catch (err) {
-    console.error("Upload failed:", err);
-    throw err;
-  }
-}
-  console.log("File:", req.file);
   if (!user) user = await User.create({ firebaseUid, email, name, phone: phone || '', avatar, organization, role })
   if (invitation) {
     invitation.acceptedAt = new Date(); await invitation.save()

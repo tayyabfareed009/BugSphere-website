@@ -31,21 +31,110 @@ router.put('/me', authorize('Owner'), asyncHandler(async (req, res) => {
 }))
 
 router.post('/invitations', authorize('Owner'), asyncHandler(async (req, res) => {
-  const { email, role, team: teamId } = req.body
-  if (!email || !role) return res.status(400).json({ message: 'Email and role are required' })
-  if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM) return res.status(503).json({ message: 'Invitation email delivery is not configured.' })
-  if (await Invitation.exists({ organization: req.user.organization, email: email.toLowerCase(), acceptedAt: null, canceledAt: null, expiresAt: { $gt: new Date() } })) return res.status(409).json({ message: 'An active invitation already exists for this email.' })
-  if (teamId && !await Team.exists({ _id: teamId, organization: req.user.organization })) return res.status(422).json({ message: 'Team not found' })
-  const organization = await Organization.findById(req.user.organization)
-  const rawToken = newInvitationToken(); const expiresAt = new Date(Date.now() + 7 * 86400000)
-  const invitation = await Invitation.create({ organization: req.user.organization, email, role, team: teamId || undefined, invitedBy: req.user._id, tokenHash: hashInvitationToken(rawToken), expiresAt, lastSentAt: new Date() })
-  const clientUrl = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, '')
-  const invitationUrl = `${clientUrl}/register?invitation=${encodeURIComponent(rawToken)}`
-  await sendInvitationEmail({ email: invitation.email, name: organization.name, role, invitationUrl, expiresAt })
-  await AuditLog.create({ organization: req.user.organization, actor: req.user._id, action: 'invitation.created', entity: 'Invitation', entityId: invitation._id })
-  console.log('[INVITATION] Email sent', { invitationId: invitation._id, organizationId: req.user.organization })
-  res.status(201).json({ id: invitation._id, email: invitation.email, role: invitation.role, team: invitation.team, status: 'Pending', expiresAt: invitation.expiresAt })
-}))
+  const { email, role, team: teamId } = req.body;
+  if (!email || !role) return res.status(400).json({ message: 'Email and role are required' });
+
+  // Check if an active invitation already exists
+  let invitation = await Invitation.findOne({
+    organization: req.user.organization,
+    email: email.toLowerCase(),
+    acceptedAt: null,
+    canceledAt: null,
+    expiresAt: { $gt: new Date() }
+  });
+
+  if (invitation) {
+    // Refresh token, reset expiration, update role/team if provided
+    const rawToken = newInvitationToken();
+    invitation.tokenHash = hashInvitationToken(rawToken);
+    invitation.expiresAt = new Date(Date.now() + 7 * 86400000);
+    invitation.lastSentAt = new Date();
+    if (role) invitation.role = role;
+    if (teamId) invitation.team = teamId;
+    await invitation.save();
+
+    // Resend email
+    const organization = await Organization.findById(req.user.organization);
+    const clientUrl = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, '');
+    const invitationUrl = `${clientUrl}/register?invitation=${encodeURIComponent(rawToken)}`;
+    await sendInvitationEmail({
+      email: invitation.email,
+      name: organization.name,
+      role: invitation.role,
+      invitationUrl,
+      expiresAt: invitation.expiresAt
+    });
+
+    await AuditLog.create({
+      organization: req.user.organization,
+      actor: req.user._id,
+      action: 'invitation.resent',
+      entity: 'Invitation',
+      entityId: invitation._id
+    });
+
+    return res.json({
+      id: invitation._id,
+      email: invitation.email,
+      role: invitation.role,
+      team: invitation.team,
+      status: 'Pending',
+      expiresAt: invitation.expiresAt,
+      message: 'Invitation refreshed and resent'
+    });
+  }
+
+  // No existing invitation – create a new one (your original logic)
+  if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM) {
+    return res.status(503).json({ message: 'Invitation email delivery is not configured.' });
+  }
+
+  // Check if user already exists? (optional)
+  if (teamId && !await Team.exists({ _id: teamId, organization: req.user.organization })) {
+    return res.status(422).json({ message: 'Team not found' });
+  }
+
+  const organization = await Organization.findById(req.user.organization);
+  const rawToken = newInvitationToken();
+  const expiresAt = new Date(Date.now() + 7 * 86400000);
+  invitation = await Invitation.create({
+    organization: req.user.organization,
+    email: email.toLowerCase(),
+    role,
+    team: teamId || undefined,
+    invitedBy: req.user._id,
+    tokenHash: hashInvitationToken(rawToken),
+    expiresAt,
+    lastSentAt: new Date()
+  });
+
+  const clientUrl = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/$/, '');
+  const invitationUrl = `${clientUrl}/register?invitation=${encodeURIComponent(rawToken)}`;
+  await sendInvitationEmail({
+    email: invitation.email,
+    name: organization.name,
+    role,
+    invitationUrl,
+    expiresAt
+  });
+
+  await AuditLog.create({
+    organization: req.user.organization,
+    actor: req.user._id,
+    action: 'invitation.created',
+    entity: 'Invitation',
+    entityId: invitation._id
+  });
+
+  res.status(201).json({
+    id: invitation._id,
+    email: invitation.email,
+    role: invitation.role,
+    team: invitation.team,
+    status: 'Pending',
+    expiresAt: invitation.expiresAt
+  });
+}));
 
 router.get('/invitations', authorize('Owner'), asyncHandler(async (req, res) => {
   const status = req.query.status || 'Pending'; const query = { organization: req.user.organization }
