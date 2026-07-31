@@ -38,43 +38,39 @@ const allowedOrigins = [
     'http://localhost:5173',
     'https://bug-sphere-website-tayyabfareed009s-projects.vercel.app'
 ];
+const allowedOrigins = [
+    "http://localhost:5173",
+    process.env.CLIENT_URL
+].filter(Boolean);
 
 const corsOptions = {
     origin(origin, callback) {
 
-        // Allow Postman, mobile apps, server-to-server requests
-        if (!origin) {
-            return callback(null, true);
-        }
+        if (!origin) return callback(null, true);
 
-        // Allow localhost and production frontend
         if (allowedOrigins.includes(origin)) {
             return callback(null, true);
         }
 
-        // Allow ALL Vercel preview deployments
-        if (origin.endsWith('.vercel.app')) {
+        if (
+            origin.startsWith("https://bug-sphere-website") &&
+            origin.endsWith(".vercel.app")
+        ) {
             return callback(null, true);
         }
 
-        console.log('Blocked by CORS:', origin);
+        console.log("Blocked Origin:", origin);
 
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error("Not allowed by CORS"));
     },
 
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-        'Origin',
-        'X-Requested-With',
-        'Content-Type',
-        'Accept',
-        'Authorization'
-    ]
+    credentials: true
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+
+
+
 
 /* ===========================
    Middleware
@@ -90,16 +86,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
    Health Check
 =========================== */
 
-app.get('/api/health', (req, res) => {
-    res.json({
-        success: true,
-        message: 'WorkSphere API Running'
-    });
-});
-
-/* ===========================
-   Routes
-=========================== */app.get('/api/health', async (req, res) => {
+app.get('/api/health', async (req, res) => {
     try {
         const mongoose = (await import('mongoose')).default;
 
@@ -150,6 +137,10 @@ app.get('/api/health', (req, res) => {
         });
     }
 });
+
+/* ===========================
+   Routes
+=========================== */
 
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
