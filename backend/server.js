@@ -33,47 +33,27 @@ const app = express();
 /* ===========================
    CORS Configuration
 =========================== */
-
 const allowedOrigins = [
-    'http://localhost:5173',
-    'https://bug-sphere-website-tayyabfareed009s-projects.vercel.app'
-];
+    "http://localhost:5173",
+    process.env.CLIENT_URL
+].filter(Boolean);
 
 const corsOptions = {
     origin(origin, callback) {
+        if (!origin) return callback(null, true);
 
-        // Allow Postman, mobile apps, server-to-server requests
-        if (!origin) {
-            return callback(null, true);
-        }
-
-        // Allow localhost and production frontend
         if (allowedOrigins.includes(origin)) {
             return callback(null, true);
         }
 
-        // Allow ALL Vercel preview deployments
-        if (origin.endsWith('.vercel.app')) {
-            return callback(null, true);
-        }
-
-        console.log('Blocked by CORS:', origin);
-
-        callback(new Error('Not allowed by CORS'));
+        console.log("Blocked by CORS:", origin);
+        callback(new Error("Not allowed by CORS"));
     },
-
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-        'Origin',
-        'X-Requested-With',
-        'Content-Type',
-        'Accept',
-        'Authorization'
-    ]
+    credentials: true
 };
 
 app.use(cors(corsOptions));
+
 // app.options('*', cors(corsOptions));
 
 /* ===========================
